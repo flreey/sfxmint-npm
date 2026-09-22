@@ -1,0 +1,52 @@
+{
+  "name": "sfxmint",
+  "version": "0.1.0",
+  "description": "Add free CC0 sound effects to a web app or game by role name. CLI downloads verified files into your project; a tiny runtime handles autoplay unlock, preload and mute. No API key.",
+  "type": "module",
+  "license": "MIT",
+  "author": "flreey",
+  "homepage": "https://sfxmint.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flreey/sfxmint-npm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/flreey/sfxmint-npm/issues"
+  },
+  "keywords": [
+    "sound-effects",
+    "sfx",
+    "audio",
+    "cc0",
+    "public-domain",
+    "game-audio",
+    "web-audio",
+    "ui-sounds",
+    "howler",
+    "soundboard",
+    "autoplay",
+    "mcp"
+  ],
+  "bin": {
+    "sfxmint": "bin/sfxmint.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/soundboard.d.ts",
+      "default": "./src/soundboard.mjs"
+    }
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\""
+  },
+  "sideEffects": false
+}
