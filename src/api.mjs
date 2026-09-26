@@ -83,6 +83,7 @@ export async function resolveRoles(origin, fetcher, roles, { style } = {}) {
     throw new Error(`--style must be one of: ${STYLES.join(", ")}`);
   }
   const selections = [];
+  const missingRoles = [];
   for (const role of roles) {
     let head;
     try {
@@ -98,10 +99,21 @@ export async function resolveRoles(origin, fetcher, roles, { style } = {}) {
       }
       throw err;
     }
+    // A known role whose default fails its own checks (a loop not yet verified seamless)
+    // answers with an error and near matches, no slug. Report it like a set's missing role.
+    if (!head.slug) {
+      missingRoles.push(role);
+      continue;
+    }
     const sound = await fetchSound(origin, fetcher, head.slug);
     selections.push({ role, sound: { ...sound, label: head.label } });
   }
-  return { selections };
+  if (!selections.length) {
+    throw new Error(
+      `No file passes its checks yet for: ${missingRoles.join(", ")}. Near matches were not substituted.`,
+    );
+  }
+  return { selections, missingRoles };
 }
 
 /** Set branch: a coherent kit for one product, as role → sound. */

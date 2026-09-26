@@ -198,6 +198,34 @@ test("search reports a gap instead of substituting a near match", async () => {
   await server.close();
 });
 
+test("a role with no file that passes its checks is reported, and the other roles still resolve", async () => {
+  const coin = makeSound("coin-01");
+  // The live API answers 200 with an error and near matches, e.g. a loop not yet verified seamless.
+  const unverified = { error: "unverified_sound", near_matches: [{ role: "rain-loop", slug: "ambience-rain-01" }] };
+  const server = await startServer({
+    "/api/v1/roles/rain-loop": unverified,
+    "/api/v1/roles/coin": { role: "coin", slug: "coin-01" },
+    "/api/v1/sounds/coin-01": () => server.rewrite(coin.sound),
+  });
+  const { selections, missingRoles } = await resolveRoles(parseOrigin(server.origin), createFetcher(), ["rain-loop", "coin"]);
+
+  assert.deepEqual(selections.map((s) => s.role), ["coin"]);
+  assert.deepEqual(missingRoles, ["rain-loop"], "the gap is reported, not a crash");
+  assert.ok(!server.requests.some((r) => r.path === "/api/v1/sounds/undefined"), "no lookup of an undefined slug");
+  await server.close();
+});
+
+test("when no named role has a file, it is an error that names them", async () => {
+  const server = await startServer({
+    "/api/v1/roles/rain-loop": { error: "unverified_sound", near_matches: [] },
+  });
+  await assert.rejects(
+    resolveRoles(parseOrigin(server.origin), createFetcher(), ["rain-loop"]),
+    /No file passes its checks yet for: rain-loop\. Near matches were not substituted/,
+  );
+  await server.close();
+});
+
 test("an unknown role points at the index instead of failing opaquely", async () => {
   const server = await startServer({
     "/api/v1/roles/nope": { status: 404, body: { error: "not_found", message: "unknown role" } },

@@ -56,7 +56,7 @@ npx sfxmint list roles                # browse (or: list sets)
 | `--force` | replace an existing file that has different content |
 | `--json` | machine-readable output |
 
-Roles are named by what they are for — `button-click`, `purchase-success`, `error`, `coin`, `jump`, `explosion`, `dialogue-blip`, `rain-loop` — and aliases work, so `click` finds `button-click`. Around 200 of them; `sfxmint list roles` prints the current set.
+Roles are named by what they are for — `click`, `purchase-success`, `error`, `coin`, `jump`, `explosion`, `dialogue-blip`, `notification` — and aliases work, so `button-click` or `tap` finds `click`. Around 200 of them; `sfxmint list roles` prints the current set.
 
 Running `add` again keeps what is already there, so you can collect cues as you build.
 
@@ -73,10 +73,10 @@ Every download is checked against the byte count and SHA-256 the API reports; a 
 
 ## Honest limits
 
-- **The library is AI-generated** (Stable Audio open models) or procedurally synthesized, then loudness-normalized and QC'd. Foley purists will hear it. Nothing is scraped or re-hosted from other libraries.
+- **The library is AI-generated** or procedurally synthesized, then loudness-normalized and QC'd. Foley purists will hear it. Nothing is scraped or re-hosted from other libraries.
 - **No music, no voice, no speech.** Sound effects only.
 - **A file check is not a listening check.** The checksum proves you got the bytes the API described. Whether a cue suits your scene is something only a listen in context can tell — the CLI flags cues with no content review.
-- **A set can be short a role.** When it is, the CLI downloads the rest and tells you which event has no file yet, rather than failing the whole kit or leaving you to discover it in production.
+- **A set can be short a role, and a role can have no file that passes its checks yet.** Either way the CLI downloads the rest and tells you which event has no file yet, rather than failing the whole kit or leaving you to discover it in production.
 
 ## Also available
 

@@ -228,7 +228,9 @@ async function main() {
   );
   if (missing.length) {
     process.stdout.write(
-      `  Not in this set: ${missing.join(", ")} — those events have no file yet.\n`,
+      flags.has("set")
+        ? `  Not in this set: ${missing.join(", ")} — those events have no file yet.\n`
+        : `  Skipped ${missing.join(", ")}: no file passes its checks yet.\n`,
     );
   }
   if (unverified.length) {
