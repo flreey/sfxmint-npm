@@ -47,6 +47,27 @@ test("internal mode keeps self-tests out of the cli channel", async () => {
   await server.close();
 });
 
+test("an API key goes to API calls only, and no key means no header", async () => {
+  const coin = makeSound("coin-01");
+  const server = await startServer({
+    "/api/v1/roles/coin": { role: "coin", slug: "coin-01" },
+    "/api/v1/sounds/coin-01": () => server.rewrite(coin.sound),
+    "/dl/coin-01.mp3": coin.body,
+  });
+  const origin = parseOrigin(server.origin);
+  const keyed = createFetcher({ apiKey: "sfx_live_" + "a".repeat(40) });
+  await resolveRoles(origin, keyed, ["coin"]);
+  await keyed.get(new URL("/dl/coin-01.mp3", origin));
+  for (const req of server.requests) {
+    const want = req.path.startsWith("/api/") ? `Bearer sfx_live_${"a".repeat(40)}` : null;
+    assert.equal(req.authorization, want, `${req.path} authorization`);
+  }
+  server.requests.length = 0;
+  await resolveRoles(origin, createFetcher({ apiKey: "" }), ["coin"]);
+  assert.ok(server.requests.every((r) => r.authorization === null), "keyless as before");
+  await server.close();
+});
+
 test("downloads verified bytes and writes a manifest", async () => {
   const coin = makeSound("coin-01");
   const server = await startServer({

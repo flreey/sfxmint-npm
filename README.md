@@ -82,6 +82,8 @@ Every download is checked against the byte count and SHA-256 the API reports; a 
 
 The same library as an [MCP server](https://github.com/flreey/sfxmint-mcp) (`https://sfxmint.com/mcp`) so a coding agent can pick cues directly, or a plain [JSON API](https://sfxmint.com/api/docs) with no key.
 
+**When the library has no fit**, SFXMint can generate the sound for your account: create an API key at [sfxmint.com/dashboard/keys](https://sfxmint.com/dashboard/keys) (a free account comes with free credits), then call `POST https://sfxmint.com/api/v1/orders` or the MCP tool `generate_sound` with `Authorization: Bearer $SFXMINT_API_KEY`. One credit per generation of up to four CC0 WAV takes. This CLI does not generate; it never needs a key, and sends `SFXMINT_API_KEY` with API requests only when it is set, so they show in your usage.
+
 ## License
 
 This package: MIT. The sound files it downloads: CC0 1.0.

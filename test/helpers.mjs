@@ -39,7 +39,7 @@ export async function startServer(routes) {
   const requests = [];
   const server = createServer((req, res) => {
     const url = new URL(req.url, "http://127.0.0.1");
-    requests.push({ path: url.pathname, search: url.searchParams, url });
+    requests.push({ path: url.pathname, search: url.searchParams, url, authorization: req.headers.authorization ?? null });
     const handler = routes[url.pathname];
     if (!handler) {
       res.writeHead(404, { "content-type": "application/json" });

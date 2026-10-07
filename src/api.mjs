@@ -1,4 +1,6 @@
-// SFXMint JSON API client. No key, no signup. Node 20+, no dependencies.
+// SFXMint JSON API client. Node 20+, no dependencies. The library never needs a key; when
+// SFXMINT_API_KEY is set, API calls carry it so they show in that account's usage (a revoked
+// key is refused). File downloads never carry it.
 //
 // Three lookup branches, same shape out: { role, sound } where `sound` always carries
 // `format_metadata` so the caller can verify bytes. These are branches, not a sequence —
@@ -41,15 +43,20 @@ function apiUrl(origin, path, params = {}, via = VIA) {
   return url;
 }
 
-export function createFetcher({ timeoutMs = 30000, internal = false } = {}) {
+export function createFetcher({ timeoutMs = 30000, internal = false, apiKey = process.env.SFXMINT_API_KEY } = {}) {
   const via = internal ? INTERNAL_VIA : VIA;
   const userAgent = internal ? INTERNAL_UA : undefined;
+  const key = typeof apiKey === "string" && apiKey.trim() ? apiKey.trim() : null;
   const state = { requests: 0 };
   async function get(url) {
     state.requests++;
+    const headers = {};
+    if (userAgent) headers["User-Agent"] = userAgent;
+    // Only API calls carry the key; file URLs are public and may sit on another origin.
+    if (key && url.pathname.startsWith("/api/")) headers.Authorization = `Bearer ${key}`;
     const res = await fetch(url, {
       signal: AbortSignal.timeout(timeoutMs),
-      headers: userAgent ? { "User-Agent": userAgent } : {},
+      headers,
     });
     if (!res.ok) {
       const detail = await res
