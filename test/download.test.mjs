@@ -90,6 +90,9 @@ test("downloads verified bytes and writes a manifest", async () => {
   assert.equal(manifest.files.coin.sha256, sha256(coin.body));
   assert.equal(sha256(await readFile(join(out, "coin.mp3"))), sha256(coin.body));
   assert.match(await readFile(join(out, "LICENSE.txt"), "utf8"), /CC0 1\.0/);
+  const md = await readFile(join(out, "SOUNDS.md"), "utf8");
+  assert.match(md, /\| coin \| coin\.mp3 \| \[/, "a row per role, the sound linked to its page");
+  assert.ok(md.includes(`(${sound.page_url})`), "links the sound's page");
   await server.close();
 });
 

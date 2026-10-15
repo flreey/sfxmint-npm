@@ -9,6 +9,7 @@ import { resolve, join, sep } from "node:path";
 import { createHash } from "node:crypto";
 
 export const MANIFEST_FILE = "sounds.json";
+export const SOUNDS_FILE = "SOUNDS.md";
 const LICENSE_FILE = "LICENSE.txt";
 // Set role keys use underscores (needs_input, add_to_cart, level_up, power_on);
 // slugs never do. Both stay restrictive enough to be safe as path segments.
@@ -116,6 +117,33 @@ async function stage(origin, fetcher, { role, sound }, format, outDir, force) {
   };
 }
 
+const cell = (text) => String(text ?? "").replace(/[|\n]/g, " ").trim();
+
+/**
+ * The manifest as a Markdown table: each file with the page it came from, so a repository that keeps
+ * these files shows where they came from (sounds.json holds the same facts for code).
+ */
+export function soundsMarkdown(manifest) {
+  const rows = Object.entries(manifest.files).map(([role, f]) => {
+    const name = cell(f.title ?? f.slug);
+    const page = f.page_url ? `[${name}](${f.page_url})` : name;
+    const seconds = typeof f.duration_ms === "number" ? `${(f.duration_ms / 1000).toFixed(1)} s` : "";
+    return `| ${cell(role)} | ${cell(f.file)} | ${page} | ${seconds} | ${cell(f.license ?? "CC0-1.0")} |`;
+  });
+  return [
+    "# Sound effects",
+    "",
+    `Free sound effects from [SFXMint](${manifest.origin}), dedicated to the public domain ([CC0 1.0](${manifest.license_url})). No credit is required.`,
+    "",
+    "| Role | File | Sound | Length | License |",
+    "|---|---|---|---|---|",
+    ...rows,
+    "",
+    `Checksums and source files: ${MANIFEST_FILE}.`,
+    "",
+  ].join("\n");
+}
+
 async function readManifest(outDir) {
   try {
     const raw = await readFile(join(outDir, MANIFEST_FILE), "utf8");
@@ -163,6 +191,7 @@ export async function downloadAll(
     join(outDir, MANIFEST_FILE),
     JSON.stringify(manifest, null, 2) + "\n",
   );
+  await writeFile(join(outDir, SOUNDS_FILE), soundsMarkdown(manifest));
   await writeFile(
     join(outDir, LICENSE_FILE),
     "SFXMint sound files: CC0 1.0 Universal (public domain dedication).\n" +

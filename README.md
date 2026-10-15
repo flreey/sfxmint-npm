@@ -66,6 +66,7 @@ Running `add` again keeps what is already there, so you can collect cues as you 
 public/sounds/
   coin.mp3
   sounds.json     ← role → file, plus source URL, checksum, duration, license
+  SOUNDS.md       ← the same list as a table, each sound linked to its page
   LICENSE.txt
 ```
 
@@ -82,7 +83,7 @@ Every download is checked against the byte count and SHA-256 the API reports; a 
 
 The same library as an [MCP server](https://github.com/flreey/sfxmint-mcp) (`https://sfxmint.com/mcp`) so a coding agent can pick cues directly, or a plain [JSON API](https://sfxmint.com/api/docs) with no key.
 
-**When the library has no fit**, SFXMint can generate the sound for your account: create an API key at [sfxmint.com/dashboard/keys](https://sfxmint.com/dashboard/keys) (a free account comes with free credits), then call `POST https://sfxmint.com/api/v1/orders` or the MCP tool `generate_sound` with `Authorization: Bearer $SFXMINT_API_KEY`. One credit per generation of up to four CC0 WAV takes. This CLI does not generate; it never needs a key, and sends `SFXMINT_API_KEY` with API requests only when it is set, so they show in your usage.
+**When the library has no fit**, SFXMint can generate the sound for your account: create an API key at [sfxmint.com/dashboard/keys](https://sfxmint.com/dashboard/keys) (free account), then call `POST https://sfxmint.com/api/v1/orders` or the MCP tool `generate_sound` with `Authorization: Bearer $SFXMINT_API_KEY`. It needs a pass or plan on the account (a 24-hour pass for $3.90, or a plan from $9.90 for 30 days); the 3 free tries of a free account are on the website. Each generation makes up to four CC0 WAV takes. This CLI does not generate; it never needs a key, and sends `SFXMINT_API_KEY` with API requests only when it is set, so they show in your usage.
 
 ## License
 
