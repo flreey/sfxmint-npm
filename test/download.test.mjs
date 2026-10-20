@@ -96,6 +96,24 @@ test("downloads verified bytes and writes a manifest", async () => {
   await server.close();
 });
 
+test("keeps the Missing section an agent wrote in SOUNDS.md", async () => {
+  const coin = makeSound("coin-01");
+  const server = await startServer({
+    "/api/v1/sounds/coin-01": () => server.rewrite(coin.sound),
+    "/dl/coin-01.mp3": coin.body,
+  });
+  const out = await tmp();
+  await mkdir(out, { recursive: true });
+  const missing = "## Missing\n\n- Boss roar: https://sfxmint.com/s/0123456789";
+  await writeFile(join(out, "SOUNDS.md"), `# Sound effects\n\nold table\n\n${missing}\n\n## Notes\n\nnot ours\n`);
+  await downloadAll(parseOrigin(server.origin), createFetcher(), [{ role: "coin", sound: server.rewrite(coin.sound) }], { format: "mp3", out });
+  const md = await readFile(join(out, "SOUNDS.md"), "utf8");
+  assert.match(md, /\| coin \| coin\.mp3 \|/, "the table is written again");
+  assert.ok(md.trimEnd().endsWith(missing), "the Missing section stays, at the end");
+  assert.ok(!md.includes("old table"), "the rest is the CLI's own");
+  await server.close();
+});
+
 test("rejects a checksum mismatch rather than writing the file", async () => {
   const coin = makeSound("coin-01");
   const server = await startServer({

@@ -154,13 +154,13 @@ export const LIBRARY_TOOL_NAMES = new Set(LIBRARY_TOOLS.map((tool) => tool.name)
 // live list. A tool without an entry here is not listed; scripts/test-pkg-mcp.mjs fails until it has one.
 export const ACCOUNT_DESCRIPTIONS = {
   generate_sound:
-    "Makes a new CC0 sound effect from a description, for the API key's account: up to four AI-generated WAV takes (signed links valid 15 minutes) with SHA-256 and seed. Each generation uses one from a pass or plan on the account, and one that makes no take is not counted; without a pass or plan it answers payment_required with buy_url and website_url, the website's page where the same sound can be made and heard first. When the takes are not ready within about 25 seconds, it returns the order id with status generating.",
+    "Makes a new CC0 sound effect from a description, for the API key's account: up to four AI-generated WAV takes (signed links valid 15 minutes) with SHA-256 and seed. Each generation uses one of the account's free tries, then one from a pass or plan on the account, and one that makes no take is not counted; with neither it answers payment_required with buy_url and website_url, the website's page where the same sound can be made and heard first. When the takes are not ready within about 25 seconds, it returns the order id with status generating.",
   get_generation:
     "Returns the status of one of this account's generations by its order id, with fresh download links for its finished takes.",
   change_sound:
     "Changes one finished take of a generation this account made, as it is, from what is off in words (any language) or a named action. Returns three versions as CC0 WAV files: a light, medium and strong change, or for a loop three seams. Free: no generation is used and no plan is needed. When the words ask for a different sound rather than a change to this one, it answers no_action with a description for a new generation.",
   start_game_kit:
-    "Starts a Game kit from a description of a game or of one scene: SFXMint plans the sounds it needs, to be made as CC0 takes, in the same project the user sees on the website. Planning and listing are free; each sound made uses one generation from a pass or plan on the account, and without one nothing is made. Returns kit_id and kit_url; planning takes about 15 seconds.",
+    "Starts a Game kit from a description of a game or of one scene: SFXMint plans the sounds it needs, to be made as CC0 takes, in the same project the user sees on the website. Planning and listing are free; each sound made uses one of the account's free tries, then one generation from a pass or plan on the account, and with neither nothing is made. Returns kit_id and kit_url; planning takes about 15 seconds.",
   add_kit_sounds:
     "Adds a list of sounds to a kit — an app's or a game's events, with names and optional moments and lengths — or a ready set's events with its library sounds already in use. Names, keys, order and lengths stay as given; SFXMint writes how each sounds. Without kit_id it starts a new kit for the list. Free: no generation is used.",
   fill_kit_from_library:
@@ -174,7 +174,7 @@ export const ACCOUNT_DESCRIPTIONS = {
   list_kit_sounds:
     "Lists the sounds of a planned Game kit's scenes, free: the scenes given are kept (all by default) and the others are switched off. Listing takes about 15 seconds, after which the kit's state shows the sounds.",
   make_kit_sounds:
-    "Makes sounds in a Game kit: each sound gets up to four CC0 takes and counts as one generation, from a pass or plan on the account and shared with its other generations; nothing is charged. Without a pass or plan it answers payment_required with buy_url, and once the day's generations are used, plans_url, the page where plans are chosen.",
+    "Makes sounds in a Game kit: each sound gets up to four CC0 takes and counts as one generation, from the account's free tries and then its pass or plan, shared with its other generations; nothing is charged. With neither it answers payment_required with buy_url, and once the day's generations are used, plans_url, the page where plans are chosen.",
   pick_kit_take:
     "Sets which of a sound's takes the kit uses; the first take is used until one is picked.",
   change_kit_take:

@@ -123,7 +123,20 @@ const cell = (text) => String(text ?? "").replace(/[|\n]/g, " ").trim();
  * The manifest as a Markdown table: each file with the page it came from, so a repository that keeps
  * these files shows where they came from (sounds.json holds the same facts for code).
  */
-export function soundsMarkdown(manifest) {
+/**
+ * The Missing section an agent keeps in SOUNDS.md (sounds the library lacks, each with its link to make it): from the
+ * heading to the next heading of the same level or the end. Kept as it is when the file is written again.
+ */
+export function missingSection(markdown) {
+  const lines = String(markdown ?? "").split("\n");
+  const start = lines.findIndex((l) => /^#{2,3}\s+Missing\b/i.test(l));
+  if (start < 0) return "";
+  const level = lines[start].match(/^#+/)[0].length;
+  const end = lines.findIndex((l, i) => i > start && new RegExp(`^#{1,${level}}\\s`).test(l));
+  return lines.slice(start, end < 0 ? undefined : end).join("\n").trimEnd();
+}
+
+export function soundsMarkdown(manifest, missing = "") {
   const rows = Object.entries(manifest.files).map(([role, f]) => {
     const name = cell(f.title ?? f.slug);
     const page = f.page_url ? `[${name}](${f.page_url})` : name;
@@ -141,6 +154,7 @@ export function soundsMarkdown(manifest) {
     "",
     `Checksums and source files: ${MANIFEST_FILE}.`,
     "",
+    ...(missing ? [missing, ""] : []),
   ].join("\n");
 }
 
@@ -191,7 +205,9 @@ export async function downloadAll(
     join(outDir, MANIFEST_FILE),
     JSON.stringify(manifest, null, 2) + "\n",
   );
-  await writeFile(join(outDir, SOUNDS_FILE), soundsMarkdown(manifest));
+  // The Missing section an agent wrote (sounds the library lacks) stays when the file is written again.
+  const missing = missingSection(await readFile(join(outDir, SOUNDS_FILE), "utf8").catch(() => ""));
+  await writeFile(join(outDir, SOUNDS_FILE), soundsMarkdown(manifest, missing));
   await writeFile(
     join(outDir, LICENSE_FILE),
     "SFXMint sound files: CC0 1.0 Universal (public domain dedication).\n" +
