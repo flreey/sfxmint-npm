@@ -33,20 +33,32 @@ export function makeSound(slug, { format = "mp3", bytes, ...extra } = {}) {
 }
 
 /**
- * @param {object} routes  pathname → handler(url) returning JSON, or a Buffer for /dl/
+ * @param {object} routes  pathname → handler(url, body) returning JSON, or a Buffer for /dl/.
+ *   `body` is the parsed JSON of a POST.
  */
 export async function startServer(routes) {
   const requests = [];
-  const server = createServer((req, res) => {
+  const server = createServer(async (req, res) => {
     const url = new URL(req.url, "http://127.0.0.1");
-    requests.push({ path: url.pathname, search: url.searchParams, url, authorization: req.headers.authorization ?? null });
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString("utf8")) : undefined;
+    requests.push({
+      method: req.method,
+      path: url.pathname,
+      search: url.searchParams,
+      url,
+      body,
+      authorization: req.headers.authorization ?? null,
+      userAgent: req.headers["user-agent"] ?? null,
+    });
     const handler = routes[url.pathname];
     if (!handler) {
       res.writeHead(404, { "content-type": "application/json" });
       res.end(JSON.stringify({ error: "not_found", message: "no route" }));
       return;
     }
-    const value = typeof handler === "function" ? handler(url) : handler;
+    const value = typeof handler === "function" ? handler(url, body) : handler;
     if (Buffer.isBuffer(value)) {
       res.writeHead(200, { "content-type": "audio/mpeg" });
       res.end(value);

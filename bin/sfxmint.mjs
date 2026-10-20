@@ -64,6 +64,7 @@ const HELP = `sfxmint ${version} — free CC0 sound effects for apps and games
   npx sfxmint add --set platformer       a coherent kit for one product
   npx sfxmint search "glass break"       free text when no role fits
   npx sfxmint list roles                 browse roles (or: list sets)
+  npx sfxmint mcp                        the same library as a local MCP server (stdio)
 
 Options
   --out <dir>          where files land            (default: public/sounds)
@@ -80,6 +81,11 @@ Search only
   --max-duration-ms <n>  hard limit, applied before ranking
   --loop <true|false>  require loop-prepared audio
   --category <name>    narrow to a known family
+
+MCP
+  sfxmint mcp          stdio server for Claude Code, Cursor, Cline and other agents:
+                       search_sounds, get_role_sound, get_sound, get_sound_set (no key).
+                       With SFXMINT_API_KEY set, the account's generation tools join them.
 
 Everything is CC0 1.0: commercial use, no attribution, no signup, no key.
 File checks confirm bytes, not suitability — preview each cue in context.
@@ -123,6 +129,16 @@ async function main() {
   }
 
   const origin = parseOrigin(flags.get("origin"));
+
+  if (command === "mcp") {
+    // stdout carries JSON-RPC only from here on.
+    const { createMcpServer, serveStdio } = await import("../src/mcp.mjs");
+    await serveStdio(
+      createMcpServer({ origin, internal: process.env.SFXMINT_INTERNAL === "1", version }),
+    );
+    return;
+  }
+
   // SFXMINT_INTERNAL=1 keeps maintainer self-tests out of the cli channel.
   const fetcher = createFetcher({ internal: process.env.SFXMINT_INTERNAL === "1" });
   const asJson = flags.has("json");

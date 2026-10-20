@@ -46,6 +46,7 @@ npx sfxmint add coin jump hit         # one file per role
 npx sfxmint add --set platformer      # a coherent kit for one product
 npx sfxmint search "glass break"      # free text when no role fits
 npx sfxmint list roles                # browse (or: list sets)
+npx sfxmint mcp                       # the library as a local MCP server (below)
 ```
 
 | Option | |
@@ -72,6 +73,46 @@ public/sounds/
 
 Every download is checked against the byte count and SHA-256 the API reports; a mismatch is an error, not a warning. Nothing overwrites an existing file with different content unless you pass `--force`.
 
+## MCP server for coding agents
+
+```bash
+npx -y sfxmint mcp
+```
+
+The same library as a local [MCP](https://modelcontextprotocol.io) server over stdio, so Claude Code, Cursor, Cline or any other MCP client can pick cues while it writes your code. Four tools, no key:
+
+| Tool | For |
+|---|---|
+| `get_role_sound` | one named event: `click`, `coin`, `purchase-success`, `error`… |
+| `get_sound_set` | a whole kit for one product, one sound per role |
+| `search_sounds` | a description, hard limits (duration, loop, format), or a gap |
+| `get_sound` | exact file metadata for one slug: URLs, SHA-256, measured acoustics |
+
+Names, arguments and results are those of the remote server at `https://sfxmint.com/mcp`, which each call goes to; the process just speaks stdio for clients that want a command. It needs Node 20+ and network access to sfxmint.com.
+
+**Claude Code**
+
+```bash
+claude mcp add sfxmint -- npx -y sfxmint mcp
+```
+
+**Cursor** (`~/.cursor/mcp.json`, or `.cursor/mcp.json` in a project), **Cline** (MCP Servers → Configure MCP Servers), **Claude Desktop**, **Windsurf** and other clients take the same block:
+
+```json
+{
+  "mcpServers": {
+    "sfxmint": {
+      "command": "npx",
+      "args": ["-y", "sfxmint", "mcp"]
+    }
+  }
+}
+```
+
+On Windows, if the client cannot start `npx` directly, use `"command": "cmd"` with `"args": ["/c", "npx", "-y", "sfxmint", "mcp"]`.
+
+With `"env": { "SFXMINT_API_KEY": "sfx_live_…" }` in that block, the tools your account can use (generation, kits) join the list and every call carries the key; without one, only the free library tools are listed. Clients that connect to remote servers can skip the local process and add `https://sfxmint.com/mcp` directly.
+
 ## Honest limits
 
 - **The library is AI-generated** or procedurally synthesized, then loudness-normalized and QC'd. Foley purists will hear it. Nothing is scraped or re-hosted from other libraries.
@@ -81,9 +122,9 @@ Every download is checked against the byte count and SHA-256 the API reports; a 
 
 ## Also available
 
-The same library as an [MCP server](https://github.com/flreey/sfxmint-mcp) (`https://sfxmint.com/mcp`) so a coding agent can pick cues directly, or a plain [JSON API](https://sfxmint.com/api/docs) with no key.
+The same library as a remote [MCP server](https://github.com/flreey/sfxmint-mcp) (`https://sfxmint.com/mcp`), or a plain [JSON API](https://sfxmint.com/api/docs) with no key.
 
-**When the library has no fit**, SFXMint can generate the sound for your account: create an API key at [sfxmint.com/dashboard/keys](https://sfxmint.com/dashboard/keys) (free account), then call `POST https://sfxmint.com/api/v1/orders` or the MCP tool `generate_sound` with `Authorization: Bearer $SFXMINT_API_KEY`. It needs a pass or plan on the account (a 24-hour pass for $3.90, or a plan from $9.90 for 30 days); the 3 free tries of a free account are on the website. Each generation makes up to four CC0 WAV takes. This CLI does not generate; it never needs a key, and sends `SFXMINT_API_KEY` with API requests only when it is set, so they show in your usage.
+**When the library has no fit**, SFXMint can generate the sound for your account: create an API key at [sfxmint.com/dashboard/keys](https://sfxmint.com/dashboard/keys) (free account), then call `POST https://sfxmint.com/api/v1/orders` or the MCP tool `generate_sound` (in `sfxmint mcp`, once `SFXMINT_API_KEY` is set) with `Authorization: Bearer $SFXMINT_API_KEY`. It needs a pass or plan on the account (a 24-hour pass for $3.90, or a plan from $9.90 for 30 days); the 3 free tries of a free account are on the website. Each generation makes up to four CC0 WAV takes. The `add` and `search` commands do not generate; they never need a key, and send `SFXMINT_API_KEY` with API requests only when it is set, so they show in your usage.
 
 ## License
 

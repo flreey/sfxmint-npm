@@ -1,7 +1,8 @@
 {
   "name": "sfxmint",
-  "version": "0.1.5",
-  "description": "Add free CC0 sound effects to a web app or game by role name. CLI downloads verified files into your project; a tiny runtime handles autoplay unlock, preload and mute. No API key.",
+  "version": "0.2.0",
+  "description": "Add free CC0 sound effects to a web app or game by role name. CLI downloads verified files into your project; a tiny runtime handles autoplay unlock, preload and mute; `sfxmint mcp` serves the library to coding agents over stdio. No API key.",
+  "mcpName": "com.sfxmint/sounds",
   "type": "module",
   "license": "MIT",
   "author": "flreey",
@@ -25,7 +26,11 @@
     "howler",
     "soundboard",
     "autoplay",
-    "mcp"
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "claude",
+    "cursor"
   ],
   "bin": {
     "sfxmint": "bin/sfxmint.mjs"
@@ -34,6 +39,10 @@
     ".": {
       "types": "./src/soundboard.d.ts",
       "default": "./src/soundboard.mjs"
+    },
+    "./mcp": {
+      "types": "./src/mcp.d.ts",
+      "default": "./src/mcp.mjs"
     }
   },
   "files": [

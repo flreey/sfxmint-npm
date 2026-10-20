@@ -1,6 +1,6 @@
 // SFXMint JSON API client. Node 20+, no dependencies. The library never needs a key; when
-// SFXMINT_API_KEY is set, API calls carry it so they show in that account's usage (a revoked
-// key is refused). File downloads never carry it.
+// SFXMINT_API_KEY is set, API and MCP calls carry it so they show in that account's usage (a
+// revoked key is refused). File downloads never carry it.
 //
 // Three lookup branches, same shape out: { role, sound } where `sound` always carries
 // `format_metadata` so the caller can verify bytes. These are branches, not a sequence —
@@ -48,14 +48,22 @@ export function createFetcher({ timeoutMs = 30000, internal = false, apiKey = pr
   const userAgent = internal ? INTERNAL_UA : undefined;
   const key = typeof apiKey === "string" && apiKey.trim() ? apiKey.trim() : null;
   const state = { requests: 0 };
-  async function get(url) {
+  async function send(url, { method = "GET", body, timeout = timeoutMs } = {}) {
     state.requests++;
     const headers = {};
     if (userAgent) headers["User-Agent"] = userAgent;
-    // Only API calls carry the key; file URLs are public and may sit on another origin.
-    if (key && url.pathname.startsWith("/api/")) headers.Authorization = `Bearer ${key}`;
+    // Only API and MCP calls carry the key; file URLs are public and may sit on another origin.
+    if (key && (url.pathname.startsWith("/api/") || url.pathname === "/mcp")) {
+      headers.Authorization = `Bearer ${key}`;
+    }
+    if (body !== undefined) {
+      headers["Content-Type"] = "application/json";
+      headers.Accept = "application/json, text/event-stream";
+    }
     const res = await fetch(url, {
-      signal: AbortSignal.timeout(timeoutMs),
+      method,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(timeout),
       headers,
     });
     if (!res.ok) {
@@ -71,7 +79,11 @@ export function createFetcher({ timeoutMs = 30000, internal = false, apiKey = pr
     }
     return res;
   }
-  return { get, json: async (url) => (await get(url)).json(), state, via };
+  const get = (url) => send(url);
+  /** A JSON-RPC message to the MCP endpoint, answered with JSON. */
+  const post = async (url, body, { timeoutMs: timeout } = {}) =>
+    (await send(url, { method: "POST", body, timeout })).json();
+  return { get, post, json: async (url) => (await get(url)).json(), state, via, hasKey: key !== null };
 }
 
 /** Full metadata for one slug, including per-format sha256 and byte counts. */
