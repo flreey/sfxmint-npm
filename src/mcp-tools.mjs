@@ -154,7 +154,7 @@ export const LIBRARY_TOOL_NAMES = new Set(LIBRARY_TOOLS.map((tool) => tool.name)
 // live list. A tool without an entry here is not listed; scripts/test-pkg-mcp.mjs fails until it has one.
 export const ACCOUNT_DESCRIPTIONS = {
   generate_sound:
-    "Makes a new CC0 sound effect from a description, for the API key's account: up to four AI-generated WAV takes (signed links valid 15 minutes) with SHA-256 and seed. Each generation uses one of the account's free tries, then one from a pass or plan on the account, and one that makes no take is not counted; with neither it answers payment_required with buy_url and website_url, the website's page where the same sound can be made and heard first. When the takes are not ready within about 25 seconds, it returns the order id with status generating.",
+    "Makes a new CC0 sound effect from a description, for the API key's account: up to four AI-generated WAV takes (signed links valid 15 minutes) with SHA-256 and seed, and an OGG link (ogg_url) for each take made with a pass or plan. Each generation uses one of the account's free tries, then one from a pass or plan on the account, and one that makes no take is not counted; with neither it answers payment_required with buy_url and website_url, the website's page where the same sound can be made and heard first. When the takes are not ready within about 25 seconds, it returns the order id with status generating.",
   get_generation:
     "Returns the status of one of this account's generations by its order id, with fresh download links for its finished takes.",
   change_sound:

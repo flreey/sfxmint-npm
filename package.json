@@ -1,6 +1,6 @@
 {
   "name": "sfxmint",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Add free CC0 sound effects to a web app or game by role name. CLI downloads verified files into your project; a tiny runtime handles autoplay unlock, preload and mute; `sfxmint mcp` serves the library to coding agents over stdio. No API key.",
   "mcpName": "com.sfxmint/sounds",
   "type": "module",
