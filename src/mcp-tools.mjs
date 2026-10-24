@@ -12,7 +12,7 @@ export const LIBRARY_TOOLS = [
       "properties": {
         "query": {
           "type": "string",
-          "description": "Keywords or a natural-language description, e.g. 'door slam', 'soft UI confirmation chime', 'coin pickup'"
+          "description": "Use concise English search terms for the source or event, action and essential audible traits from the user's request or project context: 'door slam', 'soft UI confirmation chime', 'coin pickup'. A single clear source such as 'thunder' is valid; do not pad it. Translate other languages while preserving meaning. Avoid full generation prompts, app backstory, synonym lists and invented materials or environments: full matches must cover every query word. Put duration, loop and format requirements in their separate fields. If no full match exists, inspect closest and missing_terms; simplify only optional wording, never silently drop a required trait."
         },
         "category": {
           "type": "string",
@@ -24,7 +24,7 @@ export const LIBRARY_TOOLS = [
         },
         "max_duration_ms": {
           "type": "number",
-          "description": "Hard maximum delivered duration in milliseconds; format-specific measurement is required."
+          "description": "Hard maximum length of the sound in milliseconds: a file may run longer with near-silence after the sound (audible_ms is the sound, duration_ms the file; checks say which was met)."
         },
         "loop": {
           "type": "boolean",
@@ -67,7 +67,7 @@ export const LIBRARY_TOOLS = [
         },
         "max_duration_ms": {
           "type": "number",
-          "description": "Hard maximum delivered duration in milliseconds."
+          "description": "Hard maximum length of the sound in milliseconds: a file may run longer with near-silence after the sound (audible_ms is the sound, duration_ms the file; checks say which was met)."
         },
         "loop": {
           "type": "boolean",
@@ -156,7 +156,11 @@ export const ACCOUNT_DESCRIPTIONS = {
   generate_sound:
     "Makes a new CC0 sound effect from a description, for the API key's account: up to four AI-generated WAV takes (signed links valid 15 minutes) with SHA-256 and seed, and an OGG link (ogg_url) for each take made with credits or a plan. Each generation uses the account's free try, then one of its credits or its plan, and one that makes no take is not counted; with neither it answers payment_required with buy_url and website_url, the website's page where the same sound can be made and heard first. Given variations_of, it makes a variation set: four takes close to one finished take, for a game to play at random, with a Godot .tres and a Unity script to save beside the WAVs. When the takes are not ready within about 25 seconds, it returns the order id with status generating.",
   get_generation:
-    "Returns the status of one of this account's generations by its order id, with fresh download links for its finished takes.",
+    "Returns the status and kind of one of this account's sound-effect, ambience or music generations by its order id, with fresh download links for its finished takes and loop_url when a loop was made.",
+  generate_ambience:
+    "Makes a continuous environmental sound bed such as rain, waves, a forest or a crowd: 30-second AI-generated CC0 WAV takes, with loop_cut and loop_url when a seamless loop was made. Requires an API key and credits or a plan; sound-effect free tries do not apply. The optional enhance adapts the brief with the ambience writer. Missing access returns website_url for Studio Ambience; payment_required also includes buy_url. Pending takes return an order id and status generating.",
+  generate_music:
+    "Makes instrumental background music (BGM), including ambient music: 30-second AI-generated CC0 WAV takes, with loop_cut and loop_url when a repeating musical loop was made. Requires an API key and credits or a plan; sound-effect free tries do not apply. The optional enhance adapts the brief with the music writer. Intelligible vocals and lyrics are unsupported. Missing access returns website_url for Studio BGM; payment_required also includes buy_url. Pending takes return an order id and status generating.",
   change_sound:
     "Changes one finished take of a generation this account made, as it is, from what is off in words (any language) or a named action. Returns three versions as CC0 WAV files: a light, medium and strong change, or for a loop three seams. Free: no generation is used and no plan is needed. When the words ask for a different sound rather than a change to this one, it answers no_action with a description for a new generation.",
   start_game_kit:

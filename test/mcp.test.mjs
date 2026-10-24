@@ -29,7 +29,7 @@ async function remoteMcp({ tools = [...LIBRARY_TOOLS, ACCOUNT_TOOL, KIT_TOOL] } 
           return reply({ tools });
         case "tools/call":
           if (rpc.params.name === "search_sounds") return reply(SEARCH_RESULT);
-          if (rpc.params.name === "generate_sound") {
+          if (["generate_sound", "generate_ambience", "generate_music"].includes(rpc.params.name)) {
             return reply({ isError: true, content: [{ type: "text", text: '{"error":"api_key_required"}' }] });
           }
           return { jsonrpc: "2.0", id: rpc.id, error: { code: -32602, message: `Unknown tool: ${rpc.params.name}` } };
@@ -82,12 +82,13 @@ test("with a key the account's tools follow the library tools, in the bundled wo
   // The remote server's descriptions point at other tools; the bundled ones are listed instead. A tool the package
   // has no words for yet is left out.
   const NEW_TOOL = { name: "brand_new_tool", description: "Then call generate_sound", inputSchema: { type: "object", properties: {} } };
-  const remote = await remoteMcp({ tools: [{ ...LIBRARY_TOOLS[0], description: "Choose get_role_sound instead" }, ...LIBRARY_TOOLS.slice(1), ACCOUNT_TOOL, KIT_TOOL, NEW_TOOL] });
+  const longTools = ["generate_ambience", "generate_music"].map((name) => ({ name, description: "Remote description", inputSchema: { type: "object", properties: { prompt: { type: "string", description: `${name} writing guidance` }, enhance: { type: "boolean" } }, required: ["prompt"] } }));
+  const remote = await remoteMcp({ tools: [{ ...LIBRARY_TOOLS[0], description: "Choose get_role_sound instead" }, ...LIBRARY_TOOLS.slice(1), ACCOUNT_TOOL, ...longTools, KIT_TOOL, NEW_TOOL] });
   const server = createMcpServer({ origin: remote.origin, apiKey: KEY });
   const init = await server.handle(request(1, "initialize", { protocolVersion: "2025-06-18" }));
   assert.equal(init.result.instructions, "Remote instructions with generation.");
   const list = await server.handle(request(2, "tools/list"));
-  assert.deepEqual(list.result.tools, [...LIBRARY_TOOLS, bundled(ACCOUNT_TOOL), bundled(KIT_TOOL)]);
+  assert.deepEqual(list.result.tools, [...LIBRARY_TOOLS, bundled(ACCOUNT_TOOL), ...longTools.map(bundled), bundled(KIT_TOOL)]);
   const [listCall] = remote.requests.filter((r) => r.body.method === "tools/list");
   assert.equal(listCall.method, "POST");
   assert.equal(listCall.path, "/mcp");
@@ -97,6 +98,12 @@ test("with a key the account's tools follow the library tools, in the bundled wo
   assert.equal(remote.requests.filter((r) => r.body.method === "tools/list").length, 1);
   const gen = await server.handle(request(4, "tools/call", { name: "generate_sound", arguments: { prompt: "laser" } }));
   assert.equal(gen.result.isError, true, "the remote refusal is passed on as a tool result");
+  for (const { name } of longTools) {
+    const args = { prompt: "A gentle repeating background", enhance: false };
+    const result = await server.handle(request(5, "tools/call", { name, arguments: args }));
+    assert.equal(result.result.isError, true);
+    assert.deepEqual(remote.requests.at(-1).body.params, { name, arguments: args }, "tool and caller-written prompt reach the server unchanged");
+  }
   assert.ok(remote.requests.every((r) => r.authorization === `Bearer ${KEY}`));
   await remote.close();
 });
